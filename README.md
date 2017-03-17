@@ -31,7 +31,7 @@ eval `opam config env`
 > `ocaml-protoc` is the compiler for protobuf messages to OCaml
 
 ```bash
-opam install --yes ocaml-protoc>=1.0.3
+opam install --yes "ocaml-protoc>=1.0.3"
 ```
 
 **[npm](https://nodejs.org/en/download/current/)**
