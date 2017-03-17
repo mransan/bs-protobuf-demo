@@ -10,7 +10,19 @@ is defined by a **Protobuf** schema file.
 
 This project demonstrates that using Protobuf along with the OCaml code generator [ocaml-protoc](https://github.com/mransan/ocaml-protoc), **one can easily, safely and efficiently serialize OCaml values to JSON.**
 
-While this code is server side, it works equaly well on the client. 
+While this code is server side, it works equaly well on the client.
+
+TL;TR
+------
+
+```
+git clone https://github.com/mransan/bs-protobuf-demo.git
+cd bs-protobuf-demo
+npm install
+npm run-script start & 
+curl -H "Content-Type: text/plain" -X POST -d '{"desiredUnit":"C", "temperature" : {"u":"F", "v":120}}' \
+  http://localhost:8000
+```
 
 Installation - Prerequesites
 ----------------------------
