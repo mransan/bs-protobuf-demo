@@ -8,7 +8,7 @@ The project consists in a JavaScript web server (Express) which provides a POST 
 temperature between Celcius and Fahrenheit**. The request and response body are JSON values which format
 is defined by a **Protobuf** schema file. 
 
-This project demonstrate that using Protobuf and the OCaml code generator [ocaml-protoc](https://github.com/mransan/ocaml-protoc), **one can easily and efficiently serialize OCaml values to JSON.**
+This project demonstrates that using Protobuf along with the OCaml code generator [ocaml-protoc](https://github.com/mransan/ocaml-protoc), **one can easily, safely and efficiently serialize OCaml values to JSON.**
 
 While this code is server side, it works equaly well on the client. 
 
