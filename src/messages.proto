@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+enum TemperatureUnit  {
+  C = 0; // Celcius
+  F = 1; // Fahrenheit
+}
+
+message Temperature {
+  TemperatureUnit u = 1; 
+  float v =  2;
+}
+
+message Request {
+  TemperatureUnit desired = 1;
+  Temperature temperature = 2; 
+}
+
+message Response {
+  oneof t {
+    string error = 1; 
+    Temperature temperature = 2;
+  }
+}
