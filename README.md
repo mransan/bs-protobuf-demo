@@ -1,8 +1,16 @@
-Protobuf JSON Runtime for BuckleScript
---------------------------------------
+Demo project for using Protobuf with BuckleScript
+-------------------------------------------------
 
-> This package provide the runtime library in BuckleScript to be used with 
-> generated code from [ocaml-protoc](https://github.com/mransan/ocaml-protoc/). 
+> This repo contains a demo project to illustrate how to use Protobuf messages in 
+> BuckleScript.
+
+The project consists in a JavaScript web server (Express) which provides a POST entry point to convert
+temperature between Celcius and Fahrenheit. The request and response body are JSON values which format
+is defined by a Protobuf file. 
+
+This project demonstrate that using Protobuf and the OCaml code generator [ocaml-protoc](https://github.com/mransan/ocaml-protoc), **one can easily and efficiently serialize OCaml values to JSON.**
+
+While this code is server side, it works equaly well on the client. 
 
 Installation - Prerequesites
 ----------------------------
@@ -23,7 +31,7 @@ eval `opam config env`
 > `ocaml-protoc` is the compiler for protobuf messages to OCaml
 
 ```bash
-opam install --yes ocaml-protoc
+opam install --yes ocaml-protoc>=1.0.3
 ```
 
 **[npm](https://nodejs.org/en/download/current/)**
@@ -70,18 +78,20 @@ Create a `src/messages.proto` file with the following content:
 ```Protobuf
 syntax = "proto3";
 
+syntax = "proto3";
+
 enum TemperatureUnit  {
-  CELCIUS = 0; 
-  FAHRENHEIT = 1;
+  C = 0; // Celcius
+  F = 1; // Fahrenheit
 }
 
 message Temperature {
-  TemperatureUnit temperature_unit = 1; 
-  float temperature_value =  2;
+  TemperatureUnit u = 1; 
+  float v =  2;
 }
 
 message Request {
-  TemperatureUnit desired_unit = 1;
+  TemperatureUnit desired = 1;
   Temperature temperature = 2; 
 }
 
@@ -114,38 +124,33 @@ Let's first write the core API logic using the generated OCaml type. Add `src/co
 ```OCaml
 open Messages_pb 
 
-let convert desired_unit ({temperature_unit; temperature_value}  as t)  = 
-  if desired_unit = temperature_unit
+(* Actual conversion logic *)
+let convert desired ({u; v}  as t)  = 
+  if desired = u
   then t 
   else 
-   let temperature_value = 
-     match desired_unit with
-     | Celcius -> (temperature_value -. 32.) *. 5. /. 9.  
-     | Fahrenheit -> (temperature_value *. 9. /. 5.) -. 32.
+   let v =  
+     match desired with
+     | C -> (v -. 32.) *. 5. /. 9.  
+     | F -> (v *. 9. /. 5.) -. 32.
    in 
-   {temperature_value; temperature_unit = desired_unit}
+   {v; u = desired}
 ```
 
 Let'a also add a quick test to run the function in `src/conversion_test.ml`:
 ```OCaml
 open Messages_pb 
 
-let make_celcius temperature_value = {
-  temperature_unit = Celcius; 
-  temperature_value;
-} 
+let make_celcius v = {u = C; v} 
 
-let make_fahrenheit temperature_value = {
-  temperature_unit = Fahrenheit; 
-  temperature_value;
-}
+let make_fahrenheit v = { u = F; v }
 
-let log {temperature_value; _} = Js.log temperature_value
+let log {v; _} = Js.log v
 
 let () = 
-  Conversion.convert Celcius (make_celcius 100.) |> log; 
-  Conversion.convert Celcius (make_celcius 0.) |> log; 
-  Conversion.convert Fahrenheit (make_celcius 0.) |> log
+  Conversion.convert C (make_celcius 100.) |> log; 
+  Conversion.convert C (make_celcius 0.) |> log; 
+  Conversion.convert F (make_celcius 0.) |> log
 ```
 
 **Setup the build**
@@ -166,7 +171,7 @@ Edit the `package.json` to include 2 scripts for building and running the test":
 {
   "name" : "test", 
   "dependencies": {
-    "bs-ocaml-protoc-json": "file:../bs-ocaml-protoc-json.git",
+    "bs-ocaml-protoc-json": "^0.0.x",
     "bs-platform": "^1.5.x"
   },
   "scripts" : {
@@ -194,23 +199,25 @@ Let's append the following to `conversion.ml`:
 module MessageEncoder = Messages_pb.Make_encoder(Pbrt_bsjson.Encoder)
 module MessageDecoder = Messages_pb.Make_decoder(Pbrt_bsjson.Decoder) 
 
+(* Decoding request *)
 let request_of_json_string json_str = 
   match Pbrt_bsjson.Decoder.of_string json_str with
   | None -> None 
   | Some decoder -> 
-    try
-      Some (MessageDecoder.decode_request decoder)
-    with _ -> None
+    try Some (MessageDecoder.decode_request decoder)
+    with _ -> None 
 
+(* Encoding response *)
 let json_str_of_response response = 
   let encoder = Pbrt_bsjson.Encoder.empty () in 
   MessageEncoder.encode_response response encoder; 
   Pbrt_bsjson.Encoder.to_string encoder 
 
+(* JSON entry point *)
 let convert_json request_str = 
   match request_of_json_string request_str with
-  | Some {desired_unit; temperature = Some temperature} -> 
-    let response = Temperature (convert desired_unit temperature) in 
+  | Some {desired; temperature = Some t} -> 
+    let response = Temperature (convert desired t) in 
     json_str_of_response response 
   | _ -> 
     json_str_of_response (Error "error decoding request")
@@ -220,11 +227,8 @@ Let's add a quick test as well in `src/conversion_test.ml`:
 ```OCaml
 let () = 
   Js.log @@ Conversion.convert_json {|{
-    "desiredUnit": "FAHRENHEIT", 
-    "temperature": {
-      "temperatureUnit" : "CELCIUS", 
-      "temperatureValue": 0
-    }
+    "desired": "F", 
+    "temperature": { "u" : "C", "v": 0 }
   }|}
 ```
 
@@ -243,3 +247,4 @@ We also need to update our `bsconfig.json` to include the new dependency for the
 ```
 {"temperature":{"temperatureUnit":"FAHRENHEIT","temperatureValue":-32}}
 ```
+
