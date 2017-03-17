@@ -242,7 +242,7 @@ We also need to update our `bsconfig.json` to include the new dependency for the
 
 **Setting up web server**
 
-First is of course to add all the JS tooling for ES6/Babel. Check [package.json](package.json), it contains all the dependencies and scripts to run the webserver. (run `npm install` after editing `package.json`)
+First is of course to add all the JS tooling for ES6/Babel. Check [package.json](package.json), it contains all the dependencies and scripts to run the webserver, make sure to add [.babelrc](.babelrc) file as well and run `npm install` after.
 
 The fun part is of course the main code of the web server which you can find [here](src/index.js):
 ```Javascript
