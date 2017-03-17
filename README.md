@@ -38,14 +38,8 @@ opam install --yes ocaml-protoc>=1.0.3
 
 > We assume you have node installed!
 
-Simple example 
---------------
-
-> In this simple example we'll demonstrate how to implement a library in OCaml
-> to do temperature conversion. 
->
-> The library API interface will be in JSON and will directly be used by 
-> the web server
+Temperature conversion server
+-----------------------------
 
 > We assume you start in an empty directory 
 
@@ -76,8 +70,6 @@ npm install
 Create a `src/messages.proto` file with the following content:
 
 ```Protobuf
-syntax = "proto3";
-
 syntax = "proto3";
 
 enum TemperatureUnit  {
@@ -245,12 +237,12 @@ We also need to update our `bsconfig.json` to include the new dependency for the
 🏁 Now run `npm run-script test` and you should see the ouptut:
 
 ```
-{"temperature":{"temperatureUnit":"FAHRENHEIT","temperatureValue":-32}}
+{"temperature":{"u":"F","v":-32}}
 ```
 
 **Setting up web server**
 
-First is of course to add all the Js tooling for ES6/Babel. Check [package.json](package.json) contains all the dependencies and scripts to run the webserver. 
+First is of course to add all the JS tooling for ES6/Babel. Check [package.json](package.json), it contains all the dependencies and scripts to run the webserver. (run `npm install` after editing `package.json`)
 
 The fun part is of course the main code of the web server which you can find [here](src/index.js):
 ```Javascript
@@ -267,6 +259,7 @@ app.post('/', (function (req, res) {
 
 app.listen(8000, () => { console.log("Web server started"); });
 ```
+
 🏁 Now run the following, you should see the JSON response! Voila
 
 ```bash
