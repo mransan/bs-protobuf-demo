@@ -4,9 +4,9 @@ Demo project for using Protobuf with BuckleScript
 > This repo contains a demo project to illustrate how to use Protobuf messages in 
 > BuckleScript.
 
-The project consists in a JavaScript web server (Express) which provides a POST entry point to convert
-temperature between Celcius and Fahrenheit. The request and response body are JSON values which format
-is defined by a Protobuf file. 
+The project consists in a JavaScript web server (Express) which provides a POST entry point **to convert
+temperature between Celcius and Fahrenheit**. The request and response body are JSON values which format
+is defined by a **Protobuf** schema file. 
 
 This project demonstrate that using Protobuf and the OCaml code generator [ocaml-protoc](https://github.com/mransan/ocaml-protoc), **one can easily and efficiently serialize OCaml values to JSON.**
 
@@ -248,3 +248,27 @@ We also need to update our `bsconfig.json` to include the new dependency for the
 {"temperature":{"temperatureUnit":"FAHRENHEIT","temperatureValue":-32}}
 ```
 
+**Setting up web server**
+
+First is of course to add all the Js tooling for ES6/Babel. Check [package.json](package.json) contains all the dependencies and scripts to run the webserver. 
+
+The fun part is of course the main code of the web server which you can find [here](src/index.js):
+```Javascript
+import express from 'express';
+import bodyParser from 'body-parser';
+import {convert_json} from '../lib/js/src/conversion' 
+
+const app = express(); 
+app.use(bodyParser.text())
+
+app.post('/', (function (req, res) {
+  res.send(convert_json(req.body)); 
+}));
+
+app.listen(8000, () => { console.log("Web server started"); });
+```
+🏁 Now run the following, you should see the JSON response! Voila
+
+```bash
+curl -H "Content-Type: text/plain" -X POST -d '{"desiredUnit":"C", "temperature" : {"u":"F", "v":120}}' http://localhost:8000
+```
