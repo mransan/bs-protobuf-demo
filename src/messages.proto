@@ -41,3 +41,11 @@ message BinaryTree {
     Empty empty = 2;
   }
 }
+
+// This a more compact representation than the previous one and 
+// eventually generates a much smaller JSON 
+message BinaryTreeCompact{
+  string value = 1; 
+  BinaryTreeCompact left = 2; 
+  BinaryTreeCompact right = 3; 
+}
