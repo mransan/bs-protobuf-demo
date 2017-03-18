@@ -21,3 +21,23 @@ message Response {
     Temperature temperature = 2;
   }
 }
+
+
+// Example of a Recursive data structure and how 
+// ocaml-protoc will avoid generating an OCaml 
+// for the Empty message 
+message BinaryTree {
+
+  message Node {
+    string value = 1; 
+    BinaryTree left = 2; 
+    BinaryTree right = 3; 
+  }
+
+  message Empty { }
+
+  oneof t {
+    Node node = 1; 
+    Empty empty = 2;
+  }
+}
