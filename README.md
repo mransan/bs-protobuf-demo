@@ -1,14 +1,17 @@
 Demo project for using Protobuf with BuckleScript
 -------------------------------------------------
 
-> This repo contains a demo project to illustrate how to use Protobuf messages in 
-> BuckleScript.
+> This repo contains a demo project to illustrate how to use Protobuf messages 
+> in BuckleScript.
 
-The project consists in a JavaScript web server (Express) which provides a POST entry point **to convert
-temperature between Celcius and Fahrenheit**. The request and response body are JSON values which format
+The project consists in a JavaScript web server (Express) which provides a 
+POST entry point **to convert temperature between Celcius and Fahrenheit**. 
+The request and response body are JSON values which format
 is defined by a **Protobuf** schema file. 
 
-This project demonstrates that using Protobuf along with the OCaml code generator [ocaml-protoc](https://github.com/mransan/ocaml-protoc), **one can easily, safely and efficiently serialize OCaml values to JSON.**
+This project demonstrates that using Protobuf along with the OCaml code 
+generator [ocaml-protoc](https://github.com/mransan/ocaml-protoc), 
+**one can easily, safely and efficiently serialize OCaml values to JSON.**
 
 While this code is server side, it works equaly well on the client.
 
@@ -43,7 +46,7 @@ eval `opam config env`
 > `ocaml-protoc` is the compiler for protobuf messages to OCaml
 
 ```bash
-opam install --yes "ocaml-protoc>=1.0.3"
+opam install --yes "ocaml-protoc>=1.1.0"
 ```
 
 **[npm](https://nodejs.org/en/download/current/)**
@@ -55,18 +58,14 @@ Temperature conversion server
 
 > We assume you start in an empty directory 
 
-Start by creating the src directory:
-```bash
-mkdir src
-```
-**Setup npm install**
+**Setup npm project**
 
 Start with this simple `package.json` file:
 ```json
 {
   "name" : "test", 
   "dependencies": {
-    "bs-ocaml-protoc-json": "^1.0.x",
+    "bs-ocaml-protoc-json": "^1.1.x",
     "bs-platform": "^1.5.x"
   }
 }
@@ -79,7 +78,12 @@ npm install
 
 **Define a protobuf message** 
 
-Create a `src/messages.proto` file with the following content:
+Start by creating the src directory:
+```bash
+mkdir src
+```
+
+Then create `src/messages.proto` file with the following content:
 
 ```Protobuf
 syntax = "proto3";
@@ -107,26 +111,34 @@ message Response {
 }
 ```
 
-Now generate the OCaml code with JSON encoding:
+Now generate the OCaml code with BuckleScript encoding:
 
 ```bash
-ocaml-protoc -json -ml_out src src/messages.proto
+ocaml-protoc -bs -ml_out src src/messages.proto
 ```
 
-🏁 If all goes well you should now have 2 new files in the `src` directory:
+🏁 If all goes well you should now have 4 new files in the `src` directory:
 ```
 src/
-├── messages_pb.ml
-├── messages_pb.mli
+├── messages_types.ml
+├── messages_types.ml
+├── messages_bs.mli
+├── messages_bs.mli
 └── messages.proto
 ```
 
+* `messages_types.{ml|mli}` contains the OCaml type definition along with a 
+constructor function for each of the type 
+* `messages_bs.{ml|mli}`contains 2 functions for each ocaml types, one for 
+converting an OCaml value to a JS value and one for decoding. 
+
 **Writing the conversion API**
 
-Let's first write the core API logic using the generated OCaml type. Add `src/conversion.ml` with the following code:
+Let's first write the core API logic using the generated OCaml type. 
+Add `src/conversion.ml` with the following code:
 
 ```OCaml
-open Messages_pb 
+open Messages_types
 
 (* Actual conversion logic *)
 let convert desired ({u; v}  as t)  = 
@@ -136,37 +148,35 @@ let convert desired ({u; v}  as t)  =
    let v =  
      match desired with
      | C -> (v -. 32.) *. 5. /. 9.  
-     | F -> (v *. 9. /. 5.) -. 32.
+     | F -> (v *. 9. /. 5.) +. 32.
    in 
    {v; u = desired}
 ```
 
-Let'a also add a quick test to run the function in `src/conversion_test.ml`:
+Let's also add a quick check to run the function in `src/conversion_test.ml`:
+
 ```OCaml
-open Messages_pb 
-
-let make_celcius v = {u = C; v} 
-
-let make_fahrenheit v = { u = F; v }
+open Messages_types
 
 let log {v; _} = Js.log v
 
 let () = 
-  Conversion.convert C (make_celcius 100.) |> log; 
-  Conversion.convert C (make_celcius 0.) |> log; 
-  Conversion.convert F (make_celcius 0.) |> log
+  Conversion.convert C (default_temperature ~v:100. ()) |> log; 
+  Conversion.convert C (default_temperature ()) |> log; 
+  Conversion.convert F (default_temperature ()) |> log;
+  Conversion.convert C (default_temperature ~u:F ~v:32.0 ()) |> log
 ```
 
 **Setup the build**
 
-`BuckleScript` comes with its own build tool which requires config file. Create the following `bsconfig.json` at the 
-top of your project:
+`BuckleScript` comes with its own build tool which requires config file. 
+Create the following `bsconfig.json` at the top of your project:
 
 ```Json
 {
   "name": "test",
   "sources": [ "src" ], 
-  "bs-dependencies": [ "bs-ocaml-protoc"]
+  "bs-dependencies": []
 }
 ```
 
@@ -175,8 +185,8 @@ Edit the `package.json` to include 2 scripts for building and running the test":
 {
   "name" : "test", 
   "dependencies": {
-    "bs-ocaml-protoc-json": "^0.0.x",
-    "bs-platform": "^1.5.x"
+    "bs-ocaml-protoc-json": "^0.2.x",
+    "bs-platform": "^1.6.x"
   },
   "scripts" : {
     "build" : "bsb -make-world",
@@ -194,28 +204,23 @@ Edit the `package.json` to include 2 scripts for building and running the test":
 
 **Add JSON API**
 
-Next step is to provide a `convert_json` function which will take a JSON value of a type `request` and return a JSON value of 
-type `response`. 
+Next step is to provide a `convert_json` function which will take a JSON 
+value of a type `request` and return a JSON value of type `response`. 
 
 Let's append the following to `conversion.ml`:
 
 ```OCaml
-module MessageEncoder = Messages_pb.Make_encoder(Pbrt_bsjson.Encoder)
-module MessageDecoder = Messages_pb.Make_decoder(Pbrt_bsjson.Decoder) 
-
 (* Decoding request *)
 let request_of_json_string json_str = 
-  match Pbrt_bsjson.Decoder.of_string json_str with
+  match Js_json.decodeObject @@ Js_json.parse json_str with
   | None -> None 
-  | Some decoder -> 
-    try Some (MessageDecoder.decode_request decoder)
-    with _ -> None 
+  | Some o -> Some (Messages_bs.decode_request o)
 
 (* Encoding response *)
-let json_str_of_response response = 
-  let encoder = Pbrt_bsjson.Encoder.empty () in 
-  MessageEncoder.encode_response response encoder; 
-  Pbrt_bsjson.Encoder.to_string encoder 
+let json_str_of_response response : string = 
+  let json = Js_dict.empty () in 
+  Messages_bs.encode_response response json; 
+  json |> Js_json.object_ |> Js_json.stringify
 
 (* JSON entry point *)
 let convert_json request_str = 
@@ -227,7 +232,7 @@ let convert_json request_str =
     json_str_of_response (Error "error decoding request")
 ```
 
-Let's add a quick test as well in `src/conversion_test.ml`:
+Let's append a quick test as well in `src/conversion_test.ml`:
 ```OCaml
 let () = 
   Js.log @@ Conversion.convert_json {|{
@@ -236,27 +241,33 @@ let () =
   }|}
 ```
 
-We also need to update our `bsconfig.json` to include the new dependency for the JSON runtime:
+We also need to update our `bsconfig.json` to include the new dependency 
+for the JSON runtime:
 
 ```JSON
 {
   "name": "test",
   "sources": [ "src" ], 
-  "bs-dependencies": [ "bs-ocaml-protoc", "bs-ocaml-protoc-json"]
+  "bs-dependencies": [ "bs-ocaml-protoc-json"]
 }
 ```
 
 🏁 Now run `npm run-script test` and you should see the ouptut:
 
 ```
-{"temperature":{"u":"F","v":-32}}
+{"temperature":{"u":"F","v":32}}
 ```
 
 **Setting up web server**
 
-First is of course to add all the JS tooling for ES6/Babel. Check [package.json](package.json), it contains all the dependencies and scripts to run the webserver, make sure to add [.babelrc](.babelrc) file as well and run `npm install` after.
+First is of course to add all the JS tooling for ES6/Babel. 
+Check [package.json](package.json), it contains all the dependencies and 
+scripts to run the webserver, make sure to add [.babelrc](.babelrc) file as 
+well and run `npm install` after.
 
-The fun part is of course the main code of the web server which you can find [here](src/index.js):
+The fun part is of course the main code of the web server which you 
+can find [here](src/index.js):
+
 ```Javascript
 import express from 'express';
 import bodyParser from 'body-parser';

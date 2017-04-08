@@ -1,15 +1,12 @@
-open Messages_pb 
-
-let make_celcius v = {u = C; v} 
-
-let make_fahrenheit v = { u = F; v }
+open Messages_types
 
 let log {v; _} = Js.log v
 
 let () = 
-  Conversion.convert C (make_celcius 100.) |> log; 
-  Conversion.convert C (make_celcius 0.) |> log; 
-  Conversion.convert F (make_celcius 0.) |> log
+  Conversion.convert C (default_temperature ~v:100. ()) |> log; 
+  Conversion.convert C (default_temperature ()) |> log; 
+  Conversion.convert F (default_temperature ()) |> log;
+  Conversion.convert C (default_temperature ~u:F ~v:32.0 ()) |> log
 
 let () = 
   Js.log @@ Conversion.convert_json {|{

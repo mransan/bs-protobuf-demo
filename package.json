@@ -3,7 +3,7 @@
   "dependencies": {
     "body-parser": "^1.17.1",
     "bs-ocaml-protoc-json": "^0.0.x",
-    "bs-platform": "^1.5.x",
+    "bs-platform": "^1.6.x",
     "express": "^4.15.2"
   },
   "devDependencies": {
@@ -13,7 +13,7 @@
     "babel-preset-env": "^1.2.1"
   },
   "scripts": {
-    "gen": "ocaml-protoc -json -ml_out src src/messages.proto",
+    "gen": "ocaml-protoc -bs -ml_out src src/messages.proto",
     "build": "bsb -make-world",
     "test": "npm run-script build && node lib/js/src/conversion_test.js",
     "start": "npm run-script build && babel-node src"

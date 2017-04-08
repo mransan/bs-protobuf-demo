@@ -1,6 +1,6 @@
 (** This module implement the temperature conversion API *)
 
-open Messages_pb 
+open Messages_types
 
 (* Actual conversion logic *)
 let convert desired ({u; v}  as t)  = 
@@ -10,26 +10,21 @@ let convert desired ({u; v}  as t)  =
    let v =  
      match desired with
      | C -> (v -. 32.) *. 5. /. 9.  
-     | F -> (v *. 9. /. 5.) -. 32.
+     | F -> (v *. 9. /. 5.) +. 32.
    in 
    {v; u = desired}
 
-module MessageEncoder = Messages_pb.Make_encoder(Pbrt_bsjson.Encoder)
-module MessageDecoder = Messages_pb.Make_decoder(Pbrt_bsjson.Decoder) 
-
 (* Decoding request *)
 let request_of_json_string json_str = 
-  match Pbrt_bsjson.Decoder.of_string json_str with
+  match Js_json.decodeObject @@ Js_json.parse json_str with
   | None -> None 
-  | Some decoder -> 
-    try Some (MessageDecoder.decode_request decoder)
-    with _ -> None 
+  | Some o -> Some (Messages_bs.decode_request o)
 
 (* Encoding response *)
-let json_str_of_response response = 
-  let encoder = Pbrt_bsjson.Encoder.empty () in 
-  MessageEncoder.encode_response response encoder; 
-  Pbrt_bsjson.Encoder.to_string encoder 
+let json_str_of_response response : string = 
+  let json = Js_dict.empty () in 
+  Messages_bs.encode_response response json; 
+  json |> Js_json.object_ |> Js_json.stringify
 
 (* JSON entry point *)
 let convert_json request_str = 

@@ -1,5 +1,5 @@
 {
   "name": "test",
   "sources": [ "src" ], 
-  "bs-dependencies": [ "bs-ocaml-protoc", "bs-ocaml-protoc-json"]
+  "bs-dependencies": [ "bs-ocaml-protoc-json"]
 }
