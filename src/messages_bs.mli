@@ -6,13 +6,13 @@
 val encode_temperature_unit : Messages_types.temperature_unit -> string
 (** [encode_temperature_unit v] returns JSON string*)
 
-val encode_temperature : Messages_types.temperature -> Js_json.t Js_dict.t -> unit
+val encode_temperature : Messages_types.temperature -> Js_json.t Js_dict.t
 (** [encode_temperature v dict] encodes [v] int the given JSON [dict] *)
 
-val encode_request : Messages_types.request -> Js_json.t Js_dict.t -> unit
+val encode_request : Messages_types.request -> Js_json.t Js_dict.t
 (** [encode_request v dict] encodes [v] int the given JSON [dict] *)
 
-val encode_response : Messages_types.response -> Js_json.t Js_dict.t -> unit
+val encode_response : Messages_types.response -> Js_json.t Js_dict.t
 (** [encode_response v dict] encodes [v] int the given JSON [dict] *)
 
 

@@ -91,32 +91,34 @@ let rec encode_temperature_unit (v:Messages_types.temperature_unit) : string =
   | Messages_types.C -> "C"
   | Messages_types.F -> "F"
 
-let rec encode_temperature (v:Messages_types.temperature) json = 
+let rec encode_temperature (v:Messages_types.temperature) = 
+  let json = Js_dict.empty () in
   Js_dict.set json "u" (Js_json.string (encode_temperature_unit v.Messages_types.u));
   Js_dict.set json "v" (Js_json.number v.Messages_types.v);
-  ()
+  json
 
-let rec encode_request (v:Messages_types.request) json = 
+let rec encode_request (v:Messages_types.request) = 
+  let json = Js_dict.empty () in
   Js_dict.set json "desired" (Js_json.string (encode_temperature_unit v.Messages_types.desired));
   begin match v.Messages_types.temperature with
   | None -> ()
   | Some v ->
     begin (* temperature field *)
-      let json' = Js_dict.empty () in
-      encode_temperature v json';
+      let json' = encode_temperature v in
       Js_dict.set json "temperature" (Js_json.object_ json');
     end;
   end;
-  ()
+  json
 
-let rec encode_response (v:Messages_types.response) json = 
+let rec encode_response (v:Messages_types.response) = 
+  let json = Js_dict.empty () in
   begin match v with
   | Messages_types.Error v ->
     Js_dict.set json "error" (Js_json.string v);
   | Messages_types.Temperature v ->
     begin (* temperature field *)
-      let json' = Js_dict.empty () in
-      encode_temperature v json';
+      let json' = encode_temperature v in
       Js_dict.set json "temperature" (Js_json.object_ json');
     end;
-  end
+  end;
+  json

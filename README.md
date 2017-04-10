@@ -46,7 +46,7 @@ eval `opam config env`
 > `ocaml-protoc` is the compiler for protobuf messages to OCaml
 
 ```bash
-opam install --yes "ocaml-protoc>=1.1.0"
+opam install --yes "ocaml-protoc>=1.2.0"
 ```
 
 **[npm](https://nodejs.org/en/download/current/)**
@@ -66,7 +66,7 @@ Start with this simple `package.json` file:
   "name" : "test", 
   "dependencies": {
     "bs-ocaml-protoc-json": "^1.1.x",
-    "bs-platform": "^1.5.x"
+    "bs-platform": "^1.6.x"
   }
 }
 ```
@@ -217,10 +217,9 @@ let request_of_json_string json_str =
   | Some o -> Some (Messages_bs.decode_request o)
 
 (* Encoding response *)
-let json_str_of_response response : string = 
-  let json = Js_dict.empty () in 
-  Messages_bs.encode_response response json; 
-  json |> Js_json.object_ |> Js_json.stringify
+let json_str_of_response response = 
+  Messages_bs.encode_response response
+  |> Js_json.object_ |> Js_json.stringify
 
 (* JSON entry point *)
 let convert_json request_str = 

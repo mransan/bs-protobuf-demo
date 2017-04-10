@@ -21,10 +21,9 @@ let request_of_json_string json_str =
   | Some o -> Some (Messages_bs.decode_request o)
 
 (* Encoding response *)
-let json_str_of_response response : string = 
-  let json = Js_dict.empty () in 
-  Messages_bs.encode_response response json; 
-  json |> Js_json.object_ |> Js_json.stringify
+let json_str_of_response response = 
+  Messages_bs.encode_response response
+  |> Js_json.object_ |> Js_json.stringify
 
 (* JSON entry point *)
 let convert_json request_str = 
