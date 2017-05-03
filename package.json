@@ -2,8 +2,8 @@
   "name": "bs-protobuf-demo",
   "dependencies": {
     "body-parser": "^1.17.1",
-    "bs-ocaml-protoc-json": "^0.0.x",
-    "bs-platform": "^1.6.x",
+    "bs-ocaml-protoc-json": "^0.x.x",
+    "bs-platform": "^1.x.x",
     "express": "^4.15.2"
   },
   "devDependencies": {
