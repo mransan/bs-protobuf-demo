@@ -176,7 +176,7 @@ Create the following `bsconfig.json` at the top of your project:
 {
   "name": "test",
   "sources": [ "src" ], 
-  "bs-dependencies": []
+  "bs-dependencies": ["bs-ocaml-protoc-json"]
 }
 ```
 
@@ -185,8 +185,8 @@ Edit the `package.json` to include 2 scripts for building and running the test":
 {
   "name" : "test", 
   "dependencies": {
-    "bs-ocaml-protoc-json": "^0.2.x",
-    "bs-platform": "^1.6.x"
+    "bs-ocaml-protoc-json": "^0.1.x",
+    "bs-platform": "^5.x.x"
   },
   "scripts" : {
     "build" : "bsb -make-world",
