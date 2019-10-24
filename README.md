@@ -65,8 +65,8 @@ Start with this simple `package.json` file:
 {
   "name" : "test", 
   "dependencies": {
-    "bs-ocaml-protoc-json": "^1.1.x",
-    "bs-platform": "^1.6.x"
+    "bs-ocaml-protoc-json": "^0.1.x",
+    "bs-platform": "^5.x.x"
   }
 }
 ```
