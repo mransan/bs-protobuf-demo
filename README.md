@@ -212,7 +212,7 @@ Let's append the following to `conversion.ml`:
 ```OCaml
 (* Decoding request *)
 let request_of_json_string json_str = 
-  match Js_json.decodeObject @@ Js_json.parse json_str with
+  match Js_json.decodeObject @@ Js_json.parseExn json_str with
   | None -> None 
   | Some o -> Some (Messages_bs.decode_request o)
 
